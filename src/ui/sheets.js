@@ -48,8 +48,10 @@ sheet.addEventListener('click', (e) => {
 export function openUserSheet(onSelect) {
   const items = PERSONAS.map(p => {
     const isActive = state.currentPersona.id === p.id;
+    const avatarBg = isActive ? p.color : '#E5E7EB';
+    const avatarColor = isActive ? '#fff' : '#6B7280';
     return `<div class="persona-item ${isActive ? 'active' : ''}" data-persona="${p.id}">
-      <div class="persona-item__avatar">${p.letter}</div>
+      <div class="persona-item__avatar" style="background:${avatarBg};color:${avatarColor}">${p.letter}</div>
       <div class="persona-item__info">
         <div class="persona-item__name">用户${p.letter}：${p.label}</div>
         <div class="persona-item__desc">${p.desc}</div>

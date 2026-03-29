@@ -20,6 +20,13 @@ const userCapsule = document.getElementById('userCapsule');
 // 存储每条消息对应的 JSON 数据（用于「查看JSON」）
 const jsonStore = {};
 
+// 统一状态文案
+function successText() { return '已发送至车端'; }
+function failText(reason) { return `发送失败，${reason || '未知错误'}`; }
+function statusFromResult(result) {
+  return result.success ? successText() : failText(result.message);
+}
+
 // ========== 状态订阅 ==========
 subscribe(() => {
   updateHeader();
@@ -80,7 +87,8 @@ userCapsule.addEventListener('click', () => {
     addMessage({
       id: uid(),
       type: 'system',
-      text: `— 已切换至用户${persona.letter} —`
+      text: `— 已切换至用户${persona.letter} —`,
+      divider: true
     });
   });
 });
@@ -99,22 +107,19 @@ async function handleSendContent() {
   const cardId = uid();
   jsonStore[cardId] = json;
 
-  // 反馈卡片 — 初始状态 "发送中..."
+  // 反馈卡片
   addMessage({
     id: cardId,
     type: 'card',
     cardType: 'content',
-    timeLabel: '',
-    bodyText: '你的偏好已经更新！请在车端确认变化',
+    bodyText: '您的需求已收到！将在车端显示效果',
     statusText: '发送中...',
     ackStatus: 'pending'
   });
 
-  // 发送 + 等 ACK
   const result = await sendAndWaitAck(json);
   updateMessage(cardId, {
-    timeLabel: '已发送',
-    statusText: result.success ? '已发送至车端' : '发送失败',
+    statusText: statusFromResult(result),
     ackStatus: result.success ? 'ok' : 'error'
   });
 }
@@ -136,19 +141,16 @@ boardingBtn.addEventListener('click', () => {
       id: cardId,
       type: 'card',
       cardType: 'recommend',
-      timeLabel: '',
-      bodyText: `根据用户上车信号！需要为「${persona.label}」推荐${scene.label} ${duration}min 的\n最佳默认卡片编排`,
+      bodyText: `用户上车了！需要推荐「${persona.label}」的最佳内容`,
       sceneLabel: scene.label,
       durationLabel: `${duration}分钟`,
       statusText: '发送中...',
       ackStatus: 'pending'
     });
 
-    // 发送 + ACK
     const result = await sendAndWaitAck(json);
     updateMessage(cardId, {
-      timeLabel: '已发送',
-      statusText: result.success ? '已发送至车端' : '发送失败',
+      statusText: statusFromResult(result),
       ackStatus: result.success ? 'ok' : 'error'
     });
   });
@@ -183,19 +185,16 @@ podcastBtn.addEventListener('click', () => {
         id: cardId,
         type: 'card',
         cardType: 'postcard',
-        timeLabel: '',
         sourceTitle: preset.title,
-        bodyText: '两位AI主播为你深度解读这篇文章，涵盖\n核心观点与行业趋势的延伸讨论',
+        bodyText: '两位AI主播为你深度解读这篇文章，涵盖核心观点与行业趋势的延伸讨论',
         metaText: `时长 ${formatDuration(preset.duration_sec)} · MP3 · 96kbps`,
-        statusText: '推送中...',
+        statusText: '发送中...',
         ackStatus: 'pending'
       });
 
-      // 发送 + ACK
       const result = await sendAndWaitAck(json);
       updateMessage(cardId, {
-        timeLabel: '已发送',
-        statusText: result.success ? '已推送至车端' : '推送失败',
+        statusText: statusFromResult(result),
         ackStatus: result.success ? 'ok' : 'error'
       });
     },
@@ -215,9 +214,7 @@ podcastBtn.addEventListener('click', () => {
 
       try {
         const result = await generatePodcast(url, {
-          onPhase1() {
-            // 已经显示了阶段1
-          },
+          onPhase1() { },
           onPhase2(elapsed) {
             updateMessage(statusId, {
               phase: 'progress',
@@ -232,7 +229,7 @@ podcastBtn.addEventListener('click', () => {
               });
             }
           },
-          onComplete() { /* 下方处理 */ }
+          onComplete() { }
         });
 
         // 阶段3：生成完成
@@ -257,18 +254,16 @@ podcastBtn.addEventListener('click', () => {
           id: cardId,
           type: 'card',
           cardType: 'postcard',
-          timeLabel: '',
           sourceTitle: titleFromUrl,
-          bodyText: '两位AI主播为你深度解读这篇文章，涵盖\n核心观点与行业趋势的延伸讨论',
+          bodyText: '两位AI主播为你深度解读这篇文章，涵盖核心观点与行业趋势的延伸讨论',
           metaText: `时长 ${formatDuration(Math.round(result.durationSec))} · MP3 · 96kbps`,
-          statusText: '推送中...',
+          statusText: '发送中...',
           ackStatus: 'pending'
         });
 
         const ackResult = await sendAndWaitAck(json);
         updateMessage(cardId, {
-          timeLabel: '已发送',
-          statusText: ackResult.success ? '已推送至车端' : '推送失败',
+          statusText: statusFromResult(ackResult),
           ackStatus: ackResult.success ? 'ok' : 'error'
         });
       } catch (err) {

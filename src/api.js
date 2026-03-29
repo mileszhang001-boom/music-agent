@@ -140,9 +140,9 @@ export async function sendAndWaitAck(jsonData) {
     console.log('[API] 发送:', jsonData.type, jsonData.session_id);
 
     const ack = await waitForAck(jsonData.session_id);
-    return { success: ack.status === 'ok', message: ack.message || '' };
+    return { success: ack.status === 'ok', message: ack.message || '车端未响应' };
   } catch (err) {
-    return { success: false, message: err.message || '发送失败' };
+    return { success: false, message: '网络异常' };
   }
 }
 
@@ -150,7 +150,7 @@ function waitForAck(sessionId) {
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
       pendingAcks.delete(sessionId);
-      resolve({ status: 'error', session_id: sessionId, message: 'ACK 超时' });
+      resolve({ status: 'error', session_id: sessionId, message: '车端未响应' });
     }, ACK_TIMEOUT);
     pendingAcks.set(sessionId, { resolve, timer });
   });

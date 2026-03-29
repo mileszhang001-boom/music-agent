@@ -179,6 +179,33 @@ html, body {
   text-align: center;
 }
 
+/* ========== System Divider (用户切换) ========== */
+.msg-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.msg-divider::before,
+.msg-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E5E7EB;
+}
+
+.msg-divider__text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ========== 任务分组间距 ========== */
+.msg-item + .msg-item:has(.msg-bubble--user) {
+  margin-top: 12px;
+}
+
 /* ========== User Bubble ========== */
 /* .pen: cornerRadius 18, gradient fill, padding [10,16] */
 .msg-bubble {
@@ -805,7 +832,7 @@ html, body {
   word-break: break-all;
 }
 
-.json-key { color: #67E8F9; }
+.json-key { color: #7DD3FC; }
 .json-str { color: #86EFAC; }
-.json-num { color: #FCA5A5; }
-.json-punct { color: #94A3B8; }
+.json-num { color: #FDE68A; }
+.json-punct { color: #64748B; }

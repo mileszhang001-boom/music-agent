@@ -5,19 +5,43 @@ import { formatDuration } from '../utils.js';
 const messageArea = document.getElementById('messageArea');
 const emptyState = document.getElementById('emptyState');
 
-/** 高亮 JSON 字符串 (先 escHtml 再匹配 &quot; 分隔符) */
+/** 高亮 JSON — 逐字符状态机，避免 HTML 实体正则问题 */
 function syntaxHighlight(json) {
-  const escaped = escHtml(json);
-  return escaped.replace(
-    /(&quot;(\\u[\da-fA-F]{4}|\\[^u]|[^\\&])*&quot;(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-    (match) => {
-      let cls = 'json-num';
-      if (/^&quot;/.test(match)) {
-        cls = /:$/.test(match) ? 'json-key' : 'json-str';
+  let html = '';
+  let i = 0;
+  while (i < json.length) {
+    const ch = json[i];
+    if (ch === '"') {
+      // 读取完整字符串
+      let str = '"';
+      i++;
+      while (i < json.length) {
+        if (json[i] === '\\') { str += json[i] + (json[i + 1] || ''); i += 2; continue; }
+        str += json[i];
+        if (json[i] === '"') { i++; break; }
+        i++;
       }
-      return `<span class="${cls}">${match}</span>`;
+      // 判断是 key 还是 value：key 后面紧跟 :
+      let j = i;
+      while (j < json.length && (json[j] === ' ' || json[j] === '\n')) j++;
+      const cls = json[j] === ':' ? 'json-key' : 'json-str';
+      html += `<span class="${cls}">${escHtml(str)}</span>`;
+    } else if (ch === '-' || (ch >= '0' && ch <= '9')) {
+      let num = '';
+      while (i < json.length && /[\d.eE+\-]/.test(json[i])) { num += json[i]; i++; }
+      html += `<span class="json-num">${num}</span>`;
+    } else if (json.slice(i, i + 4) === 'true') {
+      html += `<span class="json-num">true</span>`; i += 4;
+    } else if (json.slice(i, i + 5) === 'false') {
+      html += `<span class="json-num">false</span>`; i += 5;
+    } else if (json.slice(i, i + 4) === 'null') {
+      html += `<span class="json-num">null</span>`; i += 4;
+    } else {
+      html += `<span class="json-punct">${escHtml(ch)}</span>`;
+      i++;
     }
-  );
+  }
+  return html;
 }
 
 /** 渲染全部消息 */
@@ -52,7 +76,11 @@ function createMessageEl(msg) {
       break;
 
     case 'system':
-      wrapper.innerHTML = `<div class="msg-system">${escHtml(msg.text)}</div>`;
+      if (msg.divider) {
+        wrapper.innerHTML = `<div class="msg-divider"><span class="msg-divider__text">${escHtml(msg.text)}</span></div>`;
+      } else {
+        wrapper.innerHTML = `<div class="msg-system">${escHtml(msg.text)}</div>`;
+      }
       break;
 
     case 'status':
@@ -105,7 +133,6 @@ function renderCard(msg) {
   return `<div class="resp-card">
     <div class="resp-card__header">
       <span class="resp-card__badge ${badgeCls}">${cardType}</span>
-      <span class="resp-card__time">${escHtml(msg.timeLabel || '')}</span>
     </div>
     ${bodyHtml}
     <div class="resp-card__footer">

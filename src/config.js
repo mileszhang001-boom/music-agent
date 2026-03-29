@@ -7,21 +7,24 @@ export const PERSONAS = [
     letter: 'A',
     label: '欧美流行重度发烧友',
     shortLabel: '用户A',
-    desc: '欧美流行、电子、Hip-hop'
+    desc: '欧美流行、电子、Hip-hop',
+    color: 'linear-gradient(135deg, #4A6CF7, #7B5CFA)'
   },
   {
     id: 'user_b',
     letter: 'B',
     label: '喜欢听国语民谣、轻音乐',
     shortLabel: '用户B',
-    desc: '华语民谣、轻音乐、Acoustic'
+    desc: '华语民谣、轻音乐、Acoustic',
+    color: '#F59E0B'
   },
   {
     id: 'user_c',
     letter: 'C',
     label: '喜欢听古典乐、播客',
     shortLabel: '用户C',
-    desc: '古典乐、知识播客、有声书'
+    desc: '古典乐、知识播客、有声书',
+    color: '#22C55E'
   }
 ];
 
