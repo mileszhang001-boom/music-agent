@@ -115,11 +115,15 @@ function renderCard(msg) {
   if (cardType === 'content') {
     bodyHtml = `<div class="resp-card__body">${escHtml(msg.bodyText)}</div>`;
   } else if (cardType === 'postcard') {
+    const linkHtml = msg.sourceUrl
+      ? `<div class="resp-card__body-link">原链接：<a href="${escHtml(msg.sourceUrl)}" target="_blank" rel="noopener">${escHtml(msg.sourceUrl.length > 40 ? msg.sourceUrl.slice(0, 40) + '...' : msg.sourceUrl)}</a></div>`
+      : '';
     bodyHtml = `
       <div class="resp-card__body">
         <div class="resp-card__body-title">${escHtml(msg.sourceTitle)}</div>
-        <div class="resp-card__body-desc" style="white-space:pre-line">${escHtml(msg.bodyText)}</div>
+        <div class="resp-card__body-desc">${escHtml(msg.bodyText)}</div>
         <div class="resp-card__body-meta">${escHtml(msg.metaText)}</div>
+        ${linkHtml}
       </div>`;
   } else if (cardType === 'recommend') {
     bodyHtml = `

@@ -316,10 +316,15 @@ const server = createServer(async (req, res) => {
           }
         });
 
-        // 标题优先级：抓取标题 > 第一段文案 > fallback
+        // 标题优先级：抓取标题 > 从文案提取 > fallback
+        const rawText = result.firstRoundText || firstText || '';
+        const cleanedText = rawText
+          .replace(/^(今天我们(要|来)聊的是|大家好[，。！\s]*|没错[，。！\s]*|嗯[，。！\s]*|那么?[，。！\s]*|好的?[，。！\s]*|然后呢?[，。！\s]*)*/g, '')
+          .replace(/^[，。！？、\s]+/, '')
+          .trim();
         const finalTitle = (meta.title && meta.title !== '播客') ? meta.title
-          : (result.firstRoundText || firstText || '').replace(/^[，。！？、\s]+/, '').slice(0, 40) || '播客';
-        const finalDesc = meta.desc || (result.firstRoundText || firstText || '').slice(0, 80);
+          : cleanedText.slice(0, 30) || '播客';
+        const finalDesc = meta.desc || cleanedText.slice(0, 80);
         sse('meta', { title: finalTitle, desc: finalDesc });
 
         // ── 下载音频到本地 ──

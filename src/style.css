@@ -350,6 +350,22 @@ html, body {
   color: var(--text-secondary);
 }
 
+.resp-card__body-link {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.resp-card__body-link a {
+  color: var(--brand-start);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.resp-card__body-link a:active {
+  opacity: 0.7;
+}
+
 /* .pen: recommend tags — cornerRadius 6, fill #ECFDF5, padding [3,8] */
 .resp-card__tags {
   display: flex;

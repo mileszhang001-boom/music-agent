@@ -187,7 +187,8 @@ podcastBtn.addEventListener('click', () => {
         type: 'card',
         cardType: 'postcard',
         sourceTitle: preset.title,
-        bodyText: '两位AI主播为你深度解读这篇文章，涵盖核心观点与行业趋势的延伸讨论',
+        sourceUrl: preset.source_url,
+        bodyText: '两位AI主播为你深度解读这篇文章，涵盖核心观点和延伸信息',
         metaText: `时长 ${formatDuration(preset.duration_sec)} · MP3 · 96kbps`,
         statusText: '发送中...',
         ackStatus: 'pending'
@@ -265,7 +266,8 @@ podcastBtn.addEventListener('click', () => {
           type: 'card',
           cardType: 'postcard',
           sourceTitle: title,
-          bodyText: desc || '两位AI主播为你深度解读这篇文章，涵盖核心观点与行业趋势的延伸讨论',
+          sourceUrl: url,
+          bodyText: desc || '两位AI主播为你深度解读这篇文章，涵盖核心观点和延伸信息',
           metaText: `时长 ${formatDuration(Math.round(result.durationSec))} · MP3 · 96kbps`,
           statusText: '发送中...',
           ackStatus: 'pending'
