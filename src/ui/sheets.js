@@ -151,13 +151,28 @@ export function openPodcastSheet(onSelectPreset, onGenerateUrl) {
     });
   });
 
-  // URL 生成
+  // URL 生成（含格式校验）
+  const urlInput = sheet.querySelector('#podcastUrlInput');
+  const urlError = document.createElement('div');
+  urlError.className = 'podcast-url-error';
+  urlError.textContent = '请输入有效的链接地址';
+  urlInput.parentNode.after(urlError);
+
+  // 输入时清除错误态
+  urlInput.addEventListener('input', () => {
+    urlInput.classList.remove('input-error');
+    urlError.style.display = 'none';
+  });
+
   sheet.querySelector('#podcastGenBtn').addEventListener('click', () => {
-    const url = sheet.querySelector('#podcastUrlInput').value.trim();
-    if (url) {
-      onGenerateUrl(url);
-      closeSheet();
+    const url = urlInput.value.trim();
+    if (!url.match(/^https?:\/\/.+/)) {
+      urlInput.classList.add('input-error');
+      urlError.style.display = 'block';
+      return;
     }
+    onGenerateUrl(url);
+    closeSheet();
   });
 }
 

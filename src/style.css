@@ -847,6 +847,17 @@ html, body {
 
 .podcast-url-input::placeholder { color: var(--text-secondary); }
 
+.podcast-url-input.input-error {
+  border-color: #EF4444;
+}
+
+.podcast-url-error {
+  display: none;
+  font-size: 11px;
+  color: #EF4444;
+  margin-top: 4px;
+}
+
 .podcast-gen-btn {
   padding: 0 24px;
   height: 44px;
