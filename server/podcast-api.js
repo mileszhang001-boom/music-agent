@@ -323,7 +323,7 @@ const server = createServer(async (req, res) => {
           .replace(/^[，。！？、\s]+/, '')
           .trim();
         const finalTitle = (meta.title && meta.title !== '播客') ? meta.title
-          : cleanedText.slice(0, 30) || '播客';
+          : cleanedText.slice(0, 18) || '播客';
         const finalDesc = meta.desc || cleanedText.slice(0, 80);
         sse('meta', { title: finalTitle, desc: finalDesc });
 
