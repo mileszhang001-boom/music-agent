@@ -164,5 +164,5 @@ export function openPodcastSheet(onSelectPreset, onGenerateUrl) {
 // ==================== JSON 查看弹窗 ====================
 export function openJsonSheet(jsonData) {
   const viewerHtml = getJsonViewerHtml(jsonData);
-  openSheet(`${sheetHeader('用户传来JSON')}<div style="padding:12px 16px">${viewerHtml}</div>`);
+  openSheet(`${sheetHeader('JSON（发送到车）')}<div style="padding:12px 16px">${viewerHtml}</div>`);
 }

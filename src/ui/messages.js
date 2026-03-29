@@ -123,7 +123,10 @@ function renderCard(msg) {
       </div>`;
   } else if (cardType === 'recommend') {
     bodyHtml = `
-      <div class="resp-card__body" style="white-space:pre-line">${escHtml(msg.bodyText)}</div>
+      <div class="resp-card__body">${escHtml(msg.bodyText)}</div>
+      <div class="resp-card__tags">
+        <span class="resp-card__tag resp-card__tag--persona">${escHtml(msg.personaLabel || '')}</span>
+      </div>
       <div class="resp-card__tags">
         <span class="resp-card__tag resp-card__tag--scene">${escHtml(msg.sceneLabel)}</span>
         <span class="resp-card__tag resp-card__tag--duration">${escHtml(msg.durationLabel)}</span>

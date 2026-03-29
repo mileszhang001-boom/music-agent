@@ -172,6 +172,7 @@ async function generateWithDoubao(inputUrl, onProgress) {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(WS_URL, { headers, maxPayload: 50 * 1024 * 1024, handshakeTimeout: 15000 });
     let sessionId = '', rounds = 0, audioBytes = 0;
+    let firstRoundText = '';  // 用第一段文案作为标题 fallback
     const t0 = Date.now();
     const timer = setTimeout(() => { ws.close(); reject(new Error('生成超时')); }, TIMEOUT);
 
@@ -193,7 +194,12 @@ async function generateWithDoubao(inputUrl, onProgress) {
         }));
       }
       else if (eventType === 150) { onProgress('session_started', {}); }
-      else if (eventType === 360) { rounds++; onProgress('round_start', { round: rounds, text: (payload.text || '').slice(0, 80) }); }
+      else if (eventType === 360) {
+        rounds++;
+        const text = (payload.text || '').slice(0, 200);
+        if (!firstRoundText && text.length > 10) firstRoundText = text;
+        onProgress('round_start', { round: rounds, text: text.slice(0, 80) });
+      }
       else if (eventType === 361) { audioBytes += Buffer.from(data).length - 20; onProgress('audio_chunk', { audioBytes }); }
       else if (eventType === 363) {
         clearTimeout(timer);
@@ -203,7 +209,7 @@ async function generateWithDoubao(inputUrl, onProgress) {
         const durationSec = dur > 0 ? Math.round(dur) : Math.round(audioBytes / 12000);
         try { ws.send(postFrame(2, sessionId, {})); } catch {}
         ws.close();
-        resolve({ audioUrl, durationSec, rounds, elapsed: Math.round((Date.now() - t0) / 1000) });
+        resolve({ audioUrl, durationSec, rounds, elapsed: Math.round((Date.now() - t0) / 1000), firstRoundText });
       }
       else if (eventType === 152) { clearTimeout(timer); ws.close(); }
     });
@@ -292,19 +298,29 @@ const server = createServer(async (req, res) => {
         // ── 抓取文章元数据 ──
         sse('phase', { phase: 1, text: '链接已收到！正在生成播客...' });
         const meta = await fetchArticleMeta(inputUrl);
-        sse('meta', { title: meta.title, desc: meta.desc });
 
         // ── 调用豆包生成 ──
         console.log(`[Podcast] 开始生成: ${meta.title}`);
+        let firstText = '';
         const result = await generateWithDoubao(inputUrl, (event, info) => {
           if (event === 'session_started') {
             sse('phase', { phase: 2, text: '已开始生成，完成后会提醒您' });
           } else if (event === 'round_start') {
+            // 用第一段有意义的文案补充标题（微信文章抓不到标题时）
+            if (!firstText && info.text && info.text.length > 10) {
+              firstText = info.text;
+            }
             sse('progress', { round: info.round, text: info.text });
           } else if (event === 'audio_chunk') {
             sse('progress', { audioKB: Math.round(info.audioBytes / 1024) });
           }
         });
+
+        // 标题优先级：抓取标题 > 第一段文案 > fallback
+        const finalTitle = (meta.title && meta.title !== '播客') ? meta.title
+          : (result.firstRoundText || firstText || '').replace(/^[，。！？、\s]+/, '').slice(0, 40) || '播客';
+        const finalDesc = meta.desc || (result.firstRoundText || firstText || '').slice(0, 80);
+        sse('meta', { title: finalTitle, desc: finalDesc });
 
         // ── 下载音频到本地 ──
         const podcastId = `gen_${Date.now()}`;
@@ -319,8 +335,8 @@ const server = createServer(async (req, res) => {
         const record = {
           id: podcastId,
           source_url: inputUrl,
-          title: meta.title,
-          desc: meta.desc,
+          title: finalTitle,
+          desc: finalDesc,
           audio_file: audioFile,
           duration_sec: result.durationSec,
           created_at: new Date().toISOString(),
@@ -328,12 +344,12 @@ const server = createServer(async (req, res) => {
         };
         addToStore(record);
 
-        console.log(`[Podcast] 完成: ${meta.title} | ${result.durationSec}s | ${result.rounds} rounds | ${result.elapsed}s`);
+        console.log(`[Podcast] 完成: ${finalTitle} | ${result.durationSec}s | ${result.rounds} rounds | ${result.elapsed}s`);
 
         sse('complete', {
           audioUrl: `/audio/${audioFile}`,
-          title: meta.title,
-          desc: meta.desc,
+          title: finalTitle,
+          desc: finalDesc,
           durationSec: result.durationSec,
           rounds: result.rounds,
           elapsed: result.elapsed,
