@@ -3,6 +3,7 @@ import { state, subscribe, addMessage, updateMessage, setPersona } from './state
 import { uid } from './utils.js';
 import { buildContent, buildRecommend, buildPostcard } from './json-builder.js';
 import { sendAndWaitAck, initConnection, getConnectionStatus, onConnectionChange } from './api.js';
+import { generatePodcast } from './podcast.js';
 import { updateHeader } from './ui/header.js';
 import { renderMessages } from './ui/messages.js';
 import { openUserSheet, openBoardingSheet, openPodcastSheet, openJsonSheet } from './ui/sheets.js';
@@ -198,7 +199,7 @@ podcastBtn.addEventListener('click', () => {
         ackStatus: result.success ? 'ok' : 'error'
       });
     },
-    // 实时生成路径
+    // 实时生成路径 — 调用服务端豆包 API
     async (url) => {
       // 用户气泡
       addMessage({ id: uid(), type: 'user', text: url });
@@ -212,29 +213,42 @@ podcastBtn.addEventListener('click', () => {
         text: '链接已收到！正在生成播客...'
       });
 
-      // TODO: 豆包 WebSocket 实时生成（待 API 凭证补充）
-      // 目前展示提示
-      setTimeout(() => {
-        updateMessage(statusId, {
-          phase: 'progress',
-          text: '已开始生成，预计3分钟，完成后会提醒您'
+      try {
+        const result = await generatePodcast(url, {
+          onPhase1() {
+            // 已经显示了阶段1
+          },
+          onPhase2(elapsed) {
+            updateMessage(statusId, {
+              phase: 'progress',
+              text: '已开始生成，完成后会提醒您'
+            });
+          },
+          onProgress(info) {
+            if (info.round) {
+              updateMessage(statusId, {
+                phase: 'progress',
+                text: `正在生成第 ${info.round} 段...`
+              });
+            }
+          },
+          onComplete() { /* 下方处理 */ }
         });
-      }, 2000);
 
-      // 模拟生成完成（演示用，后续替换为真实 WebSocket）
-      setTimeout(async () => {
+        // 阶段3：生成完成
         updateMessage(statusId, {
           phase: 'success',
           text: '生成完成！请在车端查看播客详情'
         });
 
-        // 模拟 postcard
+        // 组装 postcard JSON
+        const titleFromUrl = url.includes('weixin') ? '微信文章播客' : (url.split('/').pop() || '自定义播客');
         const json = buildPostcard({
           sourceType: 'url',
           sourceUrl: url,
-          sourceTitle: url.split('/').pop() || '自定义播客',
-          cdnUrl: 'https://example.com/podcast_demo.mp3',
-          durationSec: 300
+          sourceTitle: titleFromUrl,
+          cdnUrl: result.audioUrl,
+          durationSec: Math.round(result.durationSec)
         });
         const cardId = uid();
         jsonStore[cardId] = json;
@@ -244,20 +258,25 @@ podcastBtn.addEventListener('click', () => {
           type: 'card',
           cardType: 'postcard',
           timeLabel: '',
-          sourceTitle: '自定义播客',
+          sourceTitle: titleFromUrl,
           bodyText: '两位AI主播为你深度解读这篇文章，涵盖\n核心观点与行业趋势的延伸讨论',
-          metaText: `时长 5:00 · MP3 · 96kbps`,
+          metaText: `时长 ${formatDuration(Math.round(result.durationSec))} · MP3 · 96kbps`,
           statusText: '推送中...',
           ackStatus: 'pending'
         });
 
-        const result = await sendAndWaitAck(json);
+        const ackResult = await sendAndWaitAck(json);
         updateMessage(cardId, {
           timeLabel: '已发送',
-          statusText: result.success ? '已推送至车端' : '推送失败',
-          ackStatus: result.success ? 'ok' : 'error'
+          statusText: ackResult.success ? '已推送至车端' : '推送失败',
+          ackStatus: ackResult.success ? 'ok' : 'error'
         });
-      }, 5000);
+      } catch (err) {
+        updateMessage(statusId, {
+          phase: 'progress',
+          text: `生成失败：${err.message}`
+        });
+      }
     }
   );
 });
