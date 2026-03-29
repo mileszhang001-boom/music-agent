@@ -165,15 +165,19 @@ async function generatePodcast(inputUrl, onProgress) {
 
       else if (eventType === 363) { // PodcastEnd — 核心！
         clearTimeout(timeout);
-        const meta = payload.meta_info || {};
-        const audioUrl = meta.audio_url || '';
-        const durationSec = meta.duration_sec || 0;
-        onProgress('podcast_end', { audioUrl, durationSec, rounds, elapsed: (Date.now() - startTime) / 1000 });
+        console.log('[Podcast] PodcastEnd raw payload:', JSON.stringify(payload));
+        // duration_sec 可能在 payload 顶层或 meta_info 内
+        const meta = payload.meta_info || payload;
+        const audioUrl = meta.audio_url || payload.audio_url || '';
+        const durationSec = meta.duration_sec || payload.duration_sec || 0;
+        // 如果 duration_sec 仍为 0，根据音频大小估算（96kbps = 12KB/s）
+        const estimatedDuration = durationSec > 0 ? durationSec : Math.round(audioBytes / 12000);
+        onProgress('podcast_end', { audioUrl, durationSec: estimatedDuration, rounds, elapsed: (Date.now() - startTime) / 1000 });
 
         // 立即关闭，不等 SessionFinished(152)！
         try { ws.send(postFrame(2, sessionId, {})); } catch {}
         ws.close();
-        resolve({ audioUrl, durationSec, rounds, elapsed: Math.round((Date.now() - startTime) / 1000) });
+        resolve({ audioUrl, durationSec: estimatedDuration, rounds, elapsed: Math.round((Date.now() - startTime) / 1000) });
       }
 
       else if (eventType === 152) { // SessionFinished
