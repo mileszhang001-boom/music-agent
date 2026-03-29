@@ -250,27 +250,52 @@
 
 ---
 
-## 服务端接口（建议）
+## 中继服务器
 
-### POST `/api/agent/message`
+### 架构
 
-**手机端 → 服务端**，发送 JSON 消息。
+手机端和车端通过 WebSocket 中继服务器通信。中继只做消息转发，不做业务逻辑。
 
-Request body：上面三种 JSON 中的任一种。
-
-Response（服务端立即返回，不等车端）：
-```json
-{
-  "received": true,
-  "message_id": "msg_xxx"
-}
+```
+手机 H5 ←─WSS─→ 中继 (阿里云) ←─WSS─→ 车端 Android
+                 同一 room
 ```
 
-### WebSocket `/ws/agent/{session_id}`
+### 连接地址
 
-**手机端长连接**，用于接收车端回传的 ACK。
+```
+wss://zhangchang.duckdns.org:8443/ws?room=car_001&role=phone|car
+```
 
-服务端收到车端 ACK 后，通过此 WebSocket 推送给手机端。
+| 参数 | 说明 |
+|------|------|
+| `room` | 房间号，手机和车端必须相同 |
+| `role` | `phone`（手机端）或 `car`（车端） |
+
+### 消息流转
+
+1. 手机端发送 JSON → 中继广播给同房间其他连接（车端）
+2. 车端处理后发送 ACK → 中继广播给手机端
+3. 中继不解析、不存储消息内容
+
+### 中继系统事件
+
+中继会发送 `type: "_relay_event"` 类型的系统消息，**不是业务消息**：
+
+```json
+{"type": "_relay_event", "event": "connected", "room": "car_001", "peers": 1}
+{"type": "_relay_event", "event": "peer_joined", "role": "car", "peers": 2}
+{"type": "_relay_event", "event": "peer_left", "role": "car", "peers": 1}
+```
+
+手机端和车端都应该过滤这些事件，不要当作业务消息处理。
+
+### 健康检查
+
+```
+GET https://zhangchang.duckdns.org:8443/health
+→ {"status":"ok","service":"relay"}
+```
 
 ---
 
