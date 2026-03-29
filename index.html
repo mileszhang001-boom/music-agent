@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>娱乐Agent手机入口</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/lucide-static@latest/font/lucide.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 顶栏 -->
+    <header class="top-bar">
+      <h1 class="top-bar__title">娱乐Agent手机入口</h1>
+      <button class="user-capsule" id="userCapsule">
+        <span class="user-capsule__avatar" id="userAvatar">A</span>
+        <span class="user-capsule__name" id="userName">用户A</span>
+        <i class="icon-chevron-down"></i>
+      </button>
+    </header>
+
+    <!-- 连接状态条 -->
+    <div class="conn-bar" id="connBar">
+      <span class="conn-bar__dot" id="connDot"></span>
+      <span class="conn-bar__text" id="connText"></span>
+    </div>
+
+    <!-- 消息区域 -->
+    <main class="message-area" id="messageArea">
+      <div class="empty-state" id="emptyState">
+        <i class="icon-message-circle empty-state__icon"></i>
+        <p class="empty-state__text">输入需求，或使用下方功能按钮</p>
+      </div>
+    </main>
+
+    <!-- 底部输入区域 -->
+    <footer class="input-area">
+      <div class="input-row">
+        <input type="text" class="input-field" id="inputField" placeholder="输入需求..." />
+        <button class="send-btn" id="sendBtn" disabled>
+          <i class="icon-arrow-up"></i>
+        </button>
+      </div>
+      <div class="action-row">
+        <button class="action-btn" id="boardingBtn">模拟上车</button>
+        <button class="action-btn" id="podcastBtn">AI播客</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 底部弹窗容器 -->
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet" id="sheet"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
