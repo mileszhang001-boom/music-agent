@@ -413,6 +413,25 @@ html, body {
 
 .resp-card__json-btn:active { background: #E5E7EB; }
 
+.resp-card__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.resp-card__retry-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: var(--brand-start);
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.resp-card__retry-btn:active { opacity: 0.8; }
+
 /* ========== Input Area ========== */
 /* .pen: padding [10,16,28,16], gap 10 */
 .input-area {

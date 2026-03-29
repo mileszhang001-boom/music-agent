@@ -212,39 +212,48 @@ podcastBtn.addEventListener('click', () => {
         text: '链接已收到！正在生成播客...'
       });
 
+      let articleTitle = '';
+      let articleDesc = '';
+
       try {
         const result = await generatePodcast(url, {
           onPhase1() { },
-          onPhase2(elapsed) {
-            updateMessage(statusId, {
-              phase: 'progress',
-              text: '已开始生成，完成后会提醒您'
-            });
+          onPhase2() {
+            updateMessage(statusId, { phase: 'progress', text: '已开始生成，完成后会提醒您' });
+          },
+          onMeta({ title, desc }) {
+            articleTitle = title;
+            articleDesc = desc;
+            if (title) {
+              updateMessage(statusId, { phase: 'progress', text: `正在生成「${title.slice(0, 20)}」...` });
+            }
           },
           onProgress(info) {
             if (info.round) {
-              updateMessage(statusId, {
-                phase: 'progress',
-                text: `正在生成第 ${info.round} 段...`
-              });
+              updateMessage(statusId, { phase: 'progress', text: `正在生成第 ${info.round} 段...` });
             }
           },
           onComplete() { }
         });
 
-        // 阶段3：生成完成
+        // 用服务端返回的标题（如有）
+        const title = result.title || articleTitle || '播客';
+        const desc = result.desc || articleDesc || '';
+        const cached = result.cached;
+
+        // 阶段3
         updateMessage(statusId, {
           phase: 'success',
-          text: '生成完成！请在车端查看播客详情'
+          text: cached ? '播客已就绪！请在车端查看详情' : '生成完成！请在车端查看播客详情'
         });
 
-        // 组装 postcard JSON
-        const titleFromUrl = url.includes('weixin') ? '微信文章播客' : (url.split('/').pop() || '自定义播客');
+        // 组装 postcard JSON — audioUrl 指向服务端持久存储
+        const baseUrl = new URL(import.meta.env.VITE_RELAY_URL).origin.replace('wss://', 'https://').replace('ws://', 'http://');
         const json = buildPostcard({
           sourceType: 'url',
           sourceUrl: url,
-          sourceTitle: titleFromUrl,
-          cdnUrl: result.audioUrl,
+          sourceTitle: title,
+          cdnUrl: baseUrl + '/api/podcast' + result.audioUrl,
           durationSec: Math.round(result.durationSec)
         });
         const cardId = uid();
@@ -254,8 +263,8 @@ podcastBtn.addEventListener('click', () => {
           id: cardId,
           type: 'card',
           cardType: 'postcard',
-          sourceTitle: titleFromUrl,
-          bodyText: '两位AI主播为你深度解读这篇文章，涵盖核心观点与行业趋势的延伸讨论',
+          sourceTitle: title,
+          bodyText: desc || '两位AI主播为你深度解读这篇文章，涵盖核心观点与行业趋势的延伸讨论',
           metaText: `时长 ${formatDuration(Math.round(result.durationSec))} · MP3 · 96kbps`,
           statusText: '发送中...',
           ackStatus: 'pending'
@@ -267,23 +276,36 @@ podcastBtn.addEventListener('click', () => {
           ackStatus: ackResult.success ? 'ok' : 'error'
         });
       } catch (err) {
-        updateMessage(statusId, {
-          phase: 'progress',
-          text: `生成失败：${err.message}`
-        });
+        updateMessage(statusId, { phase: 'progress', text: `生成失败：${err.message}` });
       }
     }
   );
 });
 
-// ========== 链路 F：查看 JSON（事件委托） ==========
-messageArea.addEventListener('click', (e) => {
-  const btn = e.target.closest('.resp-card__json-btn');
-  if (btn) {
-    const msgId = btn.dataset.jsonId;
+// ========== 链路 F：查看 JSON + 重试（事件委托） ==========
+messageArea.addEventListener('click', async (e) => {
+  // 查看 JSON
+  const jsonBtn = e.target.closest('.resp-card__json-btn');
+  if (jsonBtn) {
+    const jsonData = jsonStore[jsonBtn.dataset.jsonId];
+    if (jsonData) openJsonSheet(jsonData);
+    return;
+  }
+
+  // 重试发送（不重新生成播客，直接重发已有 JSON）
+  const retryBtn = e.target.closest('.resp-card__retry-btn');
+  if (retryBtn) {
+    const msgId = retryBtn.dataset.retryId;
     const jsonData = jsonStore[msgId];
-    if (jsonData) {
-      openJsonSheet(jsonData);
-    }
+    if (!jsonData) return;
+
+    // 更新状态为发送中
+    updateMessage(msgId, { statusText: '发送中...', ackStatus: 'pending' });
+
+    const result = await sendAndWaitAck(jsonData);
+    updateMessage(msgId, {
+      statusText: statusFromResult(result),
+      ackStatus: result.success ? 'ok' : 'error'
+    });
   }
 });

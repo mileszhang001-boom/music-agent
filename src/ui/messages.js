@@ -140,7 +140,10 @@ function renderCard(msg) {
         <span class="resp-card__dot ${dotCls}"></span>
         <span>${escHtml(msg.statusText)}</span>
       </div>
-      <button class="resp-card__json-btn" data-json-id="${msg.id}">查看JSON</button>
+      <div class="resp-card__actions">
+        ${msg.ackStatus === 'error' ? `<button class="resp-card__retry-btn" data-retry-id="${msg.id}">重试</button>` : ''}
+        <button class="resp-card__json-btn" data-json-id="${msg.id}">查看JSON</button>
+      </div>
     </div>
   </div>`;
 }
