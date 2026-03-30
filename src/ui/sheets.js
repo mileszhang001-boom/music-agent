@@ -179,5 +179,24 @@ export function openPodcastSheet(onSelectPreset, onGenerateUrl) {
 // ==================== JSON 查看弹窗 ====================
 export function openJsonSheet(jsonData) {
   const viewerHtml = getJsonViewerHtml(jsonData);
-  openSheet(`${sheetHeader('JSON（发送到车）')}<div style="padding:12px 16px">${viewerHtml}</div>`);
+  const jsonStr = JSON.stringify(jsonData, null, 2);
+
+  openSheet(`<div class="sheet__handle"></div>
+    <div class="sheet__header">
+      <span class="sheet__title">JSON（发送到车）</span>
+      <div class="sheet__header-actions">
+        <button class="sheet__copy-btn" id="jsonCopyBtn">复制</button>
+        <button class="sheet__close" data-action="close-sheet"><i class="icon-x"></i></button>
+      </div>
+    </div>
+    <div class="sheet__divider"></div>
+    <div style="padding:12px 16px">${viewerHtml}</div>`);
+
+  sheet.querySelector('#jsonCopyBtn').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    await navigator.clipboard.writeText(jsonStr);
+    btn.textContent = '已复制';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1500);
+  });
 }
