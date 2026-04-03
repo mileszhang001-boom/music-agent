@@ -112,7 +112,9 @@ wss.on('connection', (ws, req) => {
     let msgType = '?';
     try { msgType = JSON.parse(msgStr).type || '?'; } catch {}
 
-    const delivered = broadcast(room, ws, data);
+    // 必须用 string 转发，否则 ws 库以 Buffer 发 binary frame，
+    // OkHttp WebSocket 的 onMessage(text) 只接收 text frame
+    const delivered = broadcast(room, ws, msgStr);
     console.log(`[${ts()}] [${roomId}] ${role}(${ip}) → ${delivered} peers | type=${msgType} | ${msgStr.slice(0, 100)}`);
 
     // 特别标记 ACK

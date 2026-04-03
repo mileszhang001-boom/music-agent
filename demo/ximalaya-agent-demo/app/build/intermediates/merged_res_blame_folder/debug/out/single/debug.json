@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "/Users/mi/.gradle/daemon/8.5/com.xiaomi.car.xmagent.app-merged_res-36:/layout_activity_main.xml.flat",
+        "source": "/Users/mi/.gradle/daemon/8.5/com.xiaomi.car.xmagent.app-main-38:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.xiaomi.car.xmagent.app-merged_res-36:/layout_activity_main.xml.flat",
+        "source": "com.xiaomi.car.xmagent.app-main-38:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/Users/mi/.gradle/daemon/8.5/com.xiaomi.car.xmagent.app-merged_res-36:/layout_item_playlist.xml.flat",
+        "source": "/Users/mi/.gradle/daemon/8.5/com.xiaomi.car.xmagent.app-main-38:/layout/item_playlist.xml"
+    },
+    {
+        "merged": "/Users/mi/.gradle/daemon/8.5/com.xiaomi.car.xmagent.app-merged_res-36:/drawable_bg_input.xml.flat",
+        "source": "/Users/mi/.gradle/daemon/8.5/com.xiaomi.car.xmagent.app-main-38:/drawable/bg_input.xml"
+    }
+]

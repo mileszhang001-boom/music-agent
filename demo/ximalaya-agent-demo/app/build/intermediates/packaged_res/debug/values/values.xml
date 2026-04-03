@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#FF6C63FF</color>
+    <color name="accent_dark">#FF4A42DD</color>
+    <color name="bg_card">#FF2A2A4E</color>
+    <color name="bg_input">#FF33335A</color>
+    <color name="bg_primary">#FF1A1A2E</color>
+    <color name="divider">#33FFFFFF</color>
+    <color name="playing_green">#FF4CAF50</color>
+    <color name="text_hint">#80FFFFFF</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#CCCCCCCC</color>
+    <string name="app_name">喜马拉雅 AI Demo</string>
+    <string name="btn_send">发送</string>
+    <string name="hint_query">输入想听的内容，如"郭德纲的相声"</string>
+    <string name="player_idle">未在播放</string>
+    <string name="status_error">请求失败</string>
+    <string name="status_idle">输入内容开始搜索</string>
+    <string name="status_loading">AI 正在思考…</string>
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowBackground">@color/bg_primary</item>
+        <item name="android:statusBarColor">@color/bg_primary</item>
+        <item name="android:navigationBarColor">@color/bg_primary</item>
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorPrimaryDark">@color/accent_dark</item>
+        <item name="colorAccent">@color/accent</item>
+    </style>
+</resources>

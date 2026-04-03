@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">喜马拉雅 AI Demo</string>
+    <string name="hint_query">输入想听的内容，如"郭德纲的相声"</string>
+    <string name="btn_send">发送</string>
+    <string name="status_idle">输入内容开始搜索</string>
+    <string name="status_loading">AI 正在思考…</string>
+    <string name="status_error">请求失败</string>
+    <string name="player_idle">未在播放</string>
+</resources>

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "ai_tech_01",
+    "source_url": "https://mp.weixin.qq.com/s/g5-Y-7H1hfovmyBcB6WSqQ",
+    "title": "AI 重塑未来工作方式",
+    "desc": "从大模型到具身智能，AI将如何改变职场",
+    "audio_file": "ai_tech_01.mp3",
+    "duration_sec": 1110,
+    "created_at": "2026-03-28T09:00:00Z",
+    "source": "preset"
+  },
+  {
+    "id": "ai_tech_02",
+    "source_url": "https://mp.weixin.qq.com/s/6sZTC1D-hMwekVJSjbTsfQ",
+    "title": "2026 AI 十大趋势解读",
+    "desc": "大模型、Agent、自动驾驶...年度盘点",
+    "audio_file": "ai_tech_02.mp3",
+    "duration_sec": 498,
+    "created_at": "2026-03-28T09:00:00Z",
+    "source": "preset"
+  },
+  {
+    "id": "people_01",
+    "source_url": "https://mp.weixin.qq.com/s/7cxVNtXnHp46eqqO226OJA",
+    "title": "音乐人的灵感与孤独",
+    "desc": "独立音乐人如何在商业浪潮中坚守创作",
+    "audio_file": "people_01.mp3",
+    "duration_sec": 300,
+    "created_at": "2026-03-28T09:00:00Z",
+    "source": "preset"
+  },
+  {
+    "id": "people_02",
+    "source_url": "https://mp.weixin.qq.com/s/a97XwPmBDUQsnlNs69ozDA",
+    "title": "一位创业者的传奇十年",
+    "desc": "从校园创业到百亿估值的心路历程",
+    "audio_file": "people_02.mp3",
+    "duration_sec": 870,
+    "created_at": "2026-03-28T09:00:00Z",
+    "source": "preset"
+  },
+  {
+    "id": "biz_01",
+    "source_url": "https://mp.weixin.qq.com/s/F5T7weR-FDKIdTDa5SROBg",
+    "title": "顶尖管理者的决策思维",
+    "desc": "商业世界中那些反直觉的管理智慧",
+    "audio_file": "biz_01.mp3",
+    "duration_sec": 618,
+    "created_at": "2026-03-28T09:00:00Z",
+    "source": "preset"
+  },
+  {
+    "id": "biz_02",
+    "source_url": "https://mp.weixin.qq.com/s/k9vxG8d2q_tt9iactR7HpQ",
+    "title": "慢生活经济学",
+    "desc": "当效率不再是唯一追求，生活的另一种可能",
+    "audio_file": "biz_02.mp3",
+    "duration_sec": 450,
+    "created_at": "2026-03-28T09:00:00Z",
+    "source": "preset"
+  },
+  {
+    "id": "biz_03",
+    "source_url": "https://mp.weixin.qq.com/s/jzAhk7UhhqZAWer4WhFaEg",
+    "title": "商业帝国的兴衰启示",
+    "desc": "从历史视角看企业成败的底层逻辑",
+    "audio_file": "biz_03.mp3",
+    "duration_sec": 1728,
+    "created_at": "2026-03-28T09:00:00Z",
+    "source": "preset"
+  },
+  {
+    "id": "gen_1774767112003",
+    "source_url": "https://mp.weixin.qq.com/s/29pIaBfWXqCBaVHAOyvOiw",
+    "title": "播客",
+    "desc": "",
+    "audio_file": "gen_1774767112003.mp3",
+    "duration_sec": 682,
+    "created_at": "2026-03-29T06:51:52.229Z",
+    "source": "generated"
+  },
+  {
+    "id": "gen_1774795761507",
+    "source_url": "https://mp.weixin.qq.com/s/q7eQ8T0SHqEiMp_FzXDVOA",
+    "title": "今天咱们来聊一聊啊最近韩国出的一个新",
+    "desc": "今天咱们来聊一聊啊最近韩国出的一个新政策就是。有澳洲签证或者是永居的中国公民可以直接申请韩国的十年多次往返签证。这个对于在澳洲的华人来讲真的是影响巨大。",
+    "audio_file": "gen_1774795761507.mp3",
+    "duration_sec": 404,
+    "created_at": "2026-03-29T14:49:22.636Z",
+    "source": "generated"
+  }
+]
