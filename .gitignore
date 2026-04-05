@@ -2,4 +2,7 @@ node_modules/
 dist/
 .env
 .DS_Store
-音频素材/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
