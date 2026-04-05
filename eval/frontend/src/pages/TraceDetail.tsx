@@ -288,12 +288,14 @@ function MetaCard({ label, value, mono }: { label: string; value: string; mono?:
 }
 
 const DIMS = [
-  { key: 'format_score', label: '格式正确性', hard: true },
-  { key: 'playability_score', label: '可执行性', hard: true },
-  { key: 'key_factor_score', label: '关键因素捕获', hard: false },
-  { key: 'preference_score', label: '用户偏好匹配', hard: false },
-  { key: 'scene_score', label: '场景契合度', hard: false },
-  { key: 'action_logic_score', label: '操作逻辑性', hard: false },
+  { key: 'format_score', label: '格式', hard: true },
+  { key: 'executability_score', label: '可执行', hard: true, fallback: 'playability_score' },
+  { key: 'golden_score', label: 'Golden', hard: false },
+  { key: 'key_factor_score', label: '关键因素', hard: false },
+  { key: 'preference_score', label: '偏好', hard: false },
+  { key: 'scene_score', label: '场景', hard: false },
+  { key: 'action_logic_score', label: '逻辑', hard: false },
+  { key: 'result_quality_score', label: '结果', hard: false },
 ]
 
 function ScoreSection({ score }: { score: AnyData | null }) {
@@ -309,22 +311,23 @@ function ScoreSection({ score }: { score: AnyData | null }) {
 
   return (
     <Section title="评分结果">
-      <div className="grid grid-cols-6 gap-3 mb-4">
+      <div className="grid grid-cols-4 gap-3 mb-4">
         {DIMS.map((dim) => {
-          const val = score[dim.key] ?? -1
-          const display = dim.hard
-            ? (val >= 1 ? 'Pass' : 'Fail')
-            : (val >= 0 ? val.toFixed(1) : '-')
-          const color = dim.hard
-            ? (val >= 1 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50')
+          const val = score[dim.key] ?? score[(dim as AnyData).fallback] ?? -1
+          const isNA = val < 0
+          const display = isNA ? 'N/A'
+            : dim.hard ? (val >= 1 ? 'Pass' : 'Fail')
+            : val.toFixed(1)
+          const color = isNA ? 'text-gray-400 bg-gray-50'
+            : dim.hard
+              ? (val >= 1 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50')
             : val >= 7 ? 'text-green-600 bg-green-50'
             : val >= 5 ? 'text-yellow-600 bg-yellow-50'
-            : val >= 0 ? 'text-red-600 bg-red-50'
-            : 'text-gray-400 bg-gray-50'
+            : 'text-red-600 bg-red-50'
           return (
-            <div key={dim.key} className={`rounded-lg p-3 text-center ${color}`}>
-              <p className="text-[10px] opacity-70 mb-1">{dim.label}</p>
-              <p className="text-lg font-bold">{display}</p>
+            <div key={dim.key} className={`rounded-lg p-2.5 text-center ${color}`}>
+              <p className="text-[10px] opacity-70 mb-0.5">{dim.label}</p>
+              <p className="text-base font-bold">{display}</p>
             </div>
           )
         })}

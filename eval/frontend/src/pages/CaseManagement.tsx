@@ -24,9 +24,17 @@ const EDITABLE_FIELDS = [
   { key: '关键因素', type: 'text' },
   { key: '期望风格方向', type: 'text' },
   { key: '应避免的内容', type: 'text' },
+  { key: 'required_actions', type: 'textarea', placeholder: '[{"tool":"switch_recommend_page","args":{"page_index":1}}]' },
+  { key: 'acceptable_variants', type: 'textarea', placeholder: '[{"tool":"switch_recommend_qq_cards","args":{"card_names":["欧美榜"]}}]' },
   { key: '审核状态', type: 'select', options: ['待审核', '已审核', '有建议'] },
   { key: '备注', type: 'text' },
 ]
+
+function hasGoldenAnswer(c: CaseRecord): boolean {
+  const r = getField(c, 'required_actions')
+  const v = getField(c, 'acceptable_variants')
+  return (r.length > 2 || v.length > 2) // 排除空 "[]"
+}
 
 function getField(c: CaseRecord, field: string): string {
   const val = c[field]
@@ -116,10 +124,14 @@ export default function CaseManagement() {
   // Inject
   const handleInject = async () => {
     if (selected.size === 0) return
+    const selectedCases = cases.filter((c) => selected.has(String(c.record_id)))
+    const noGolden = selectedCases.filter((c) => !hasGoldenAnswer(c)).length
+    if (noGolden > 0) {
+      const ok = window.confirm(`${noGolden} 个 Case 未标注 Golden Answer，这些 Case 的 Golden Answer 维度将显示为 N/A。\n\n确认继续注入？`)
+      if (!ok) return
+    }
     setInjecting(true); setMessage(null)
     try {
-      // 找到选中 case 的 case_id
-      const selectedCases = cases.filter((c) => selected.has(String(c.record_id)))
       const caseIds = selectedCases.map((c) => getField(c, 'Case ID')).filter(Boolean)
       const res = await api.injectCases({ case_ids: caseIds.length ? caseIds : undefined })
       setMessage({ type: 'ok', text: res.message })
@@ -199,6 +211,7 @@ export default function CaseManagement() {
                 <th className="px-3 py-2.5 font-medium w-20">乘客</th>
                 <th className="px-3 py-2.5 font-medium w-24">关键因素</th>
                 <th className="px-3 py-2.5 font-medium w-20">状态</th>
+                <th className="px-3 py-2.5 font-medium w-16">GA</th>
               </tr>
             </thead>
             <tbody>
@@ -239,11 +252,17 @@ export default function CaseManagement() {
                           {status || '-'}
                         </span>
                       </td>
+                      <td className="px-3 py-2.5">
+                        {hasGoldenAnswer(c)
+                          ? <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-700">已标注</span>
+                          : <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-600">待补充</span>
+                        }
+                      </td>
                     </tr>
 
                     {isEditing && (
                       <tr key={`${rid}-edit`}>
-                        <td colSpan={8} className="px-4 py-4 bg-blue-50/50 border-b">
+                        <td colSpan={9} className="px-4 py-4 bg-blue-50/50 border-b">
                           <div className="grid grid-cols-3 gap-3">
                             {EDITABLE_FIELDS.map((f) => (
                               <div key={f.key}>
@@ -255,6 +274,17 @@ export default function CaseManagement() {
                                     <option value="">不限</option>
                                     {f.options?.map((o) => <option key={o} value={o}>{o}</option>)}
                                   </select>
+                                ) : f.type === 'textarea' ? (
+                                  <div>
+                                    <textarea value={editFields[f.key] || ''}
+                                      onChange={(e) => setEditFields((p) => ({ ...p, [f.key]: e.target.value }))}
+                                      placeholder={f.placeholder || ''}
+                                      rows={2}
+                                      className="w-full border rounded px-2 py-1.5 text-xs font-mono bg-white" />
+                                    {!editFields[f.key] && (
+                                      <p className="text-[10px] text-orange-500 mt-0.5">待补充，否则 Golden Answer 维度将显示 N/A</p>
+                                    )}
+                                  </div>
                                 ) : (
                                   <input type="text" value={editFields[f.key] || ''}
                                     onChange={(e) => setEditFields((p) => ({ ...p, [f.key]: e.target.value }))}

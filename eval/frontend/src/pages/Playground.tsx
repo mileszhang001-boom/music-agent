@@ -71,11 +71,10 @@ export default function Playground() {
   }
 
   const radarData = result
-    ? SCORE_DIMENSIONS.filter((d) => !d.hard).map((dim) => ({
-        dimension: dim.label,
-        score: Math.max(0, result.scores[dim.key] ?? 0),
-        fullMark: 10,
-      }))
+    ? SCORE_DIMENSIONS.filter((d) => !d.hard).map((dim) => {
+        const val = result.scores[dim.key] ?? -1
+        return { dimension: dim.label, score: val >= 0 ? val : 0, fullMark: 10 }
+      }).filter((d) => d.score > 0)
     : []
 
   return (
@@ -269,15 +268,17 @@ export default function Playground() {
                 {/* Score list */}
                 <div className="bg-white rounded-lg border p-4 space-y-2">
                   {SCORE_DIMENSIONS.map((dim) => {
-                    const val = result.scores[dim.key] ?? -1
-                    const display = dim.hard
-                      ? (val >= 1 ? 'Pass' : 'Fail')
-                      : (val >= 0 ? `${val.toFixed(1)}/10` : '-')
+                    const val = result.scores[dim.key] ?? (dim.key === 'executability_score' ? result.scores['playability_score'] : undefined) ?? -1
+                    const na = val < 0
+                    const display = na ? 'N/A'
+                      : dim.hard ? (val >= 1 ? 'Pass' : 'Fail')
+                      : `${val.toFixed(1)}/10`
                     return (
                       <div key={dim.key} className="flex items-center justify-between">
                         <span className="text-xs text-gray-600">{dim.label}</span>
                         <span className={`text-sm font-medium ${
-                          dim.hard
+                          na ? 'text-gray-400'
+                          : dim.hard
                             ? (val >= 1 ? 'text-green-600' : 'text-red-600')
                             : scoreColor(val)
                         }`}>

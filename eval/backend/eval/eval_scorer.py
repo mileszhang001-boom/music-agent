@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-"""6 维评分执行器
+"""8 维评分执行器 (v2.0)
 
-串联全部 6 个 metrics（2 硬 + 4 软），对一条 parsed trace 跑完整评分。
-硬约束不通过时，软约束仍然执行（提供参考分），但标记硬约束失败。
+串联全部 metrics 对一条 parsed trace 跑完整评分：
+- L1 硬约束 (2): 格式正确性、可执行性
+- L2 规则匹配 (1): Golden Answer
+- L3 LLM 评分 (4+1): 关键因素、偏好匹配、场景契合、操作逻辑 + 结果质量(条件)
 """
 
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from metrics import get_hard_metrics, get_llm_metrics
 from metrics.base import MetricResult
@@ -14,40 +16,47 @@ from metrics.base import MetricResult
 
 @dataclass
 class ScoreResult:
-    """完整 6 维评分结果"""
+    """完整 8 维评分结果"""
     trace_id: str
-    # 硬约束 (0 或 1)
+    # L1 硬约束 (0 或 1)
     format_score: float
-    playability_score: float
-    # 软约束 (0-10)
+    playability_score: float  # 保留兼容旧数据
+    executability_score: float  # v2.0 重命名
+    # L2 规则匹配 (0-10, -1=未标注)
+    golden_score: float
+    # L3 LLM 评分 (0-10)
     key_factor_score: float
     preference_score: float
     scene_score: float
     action_logic_score: float
+    result_quality_score: float  # -1=非推荐场景
     # 元数据
     latency_ms: int
-    hard_pass: bool  # 硬约束是否全部通过
-    reasoning: dict  # 各维度评分理由
+    hard_pass: bool
+    reasoning: dict = field(default_factory=dict)
 
     def avg_soft_score(self) -> float:
-        """软约束平均分"""
+        """软约束平均分（排除 -1 的 N/A 维度）"""
         scores = [self.key_factor_score, self.preference_score,
-                  self.scene_score, self.action_logic_score]
+                  self.scene_score, self.action_logic_score,
+                  self.golden_score, self.result_quality_score]
         valid = [s for s in scores if s >= 0]
         return sum(valid) / len(valid) if valid else 0.0
 
     def to_db_dict(self, run_id: str = "", case_id: str = "") -> dict:
-        """转为 db.insert_eval_score 所需的 dict"""
         return {
             "run_id": run_id,
             "trace_id": self.trace_id,
             "case_id": case_id,
             "format_score": self.format_score,
             "playability_score": self.playability_score,
+            "executability_score": self.executability_score,
+            "golden_score": self.golden_score,
             "key_factor_score": self.key_factor_score,
             "preference_score": self.preference_score,
             "scene_score": self.scene_score,
             "action_logic_score": self.action_logic_score,
+            "result_quality_score": self.result_quality_score,
             "latency_ms": self.latency_ms,
             "reasoning": self.reasoning,
         }
@@ -81,10 +90,22 @@ async def score_trace(
         reasoning[result.name] = result.reason
 
     format_result = hard_results[0]
-    playability_result = hard_results[1]
+    executability_result = hard_results[1]
     hard_pass = all(r.is_successful for r in hard_results)
 
-    # ── 软约束 ──
+    # ── L2: Golden Answer (规则匹配) ──
+    golden_score = -1.0
+    try:
+        from metrics.golden_metric import GoldenAnswerMetric
+        golden_metric = GoldenAnswerMetric()
+        golden_result = await golden_metric.measure(parsed_trace, case_context)
+        golden_score = golden_result.score
+        reasoning[golden_result.name] = golden_result.reason
+    except Exception as e:
+        reasoning["Golden Answer"] = f"评分出错: {e}"
+
+    # ── L3: LLM 软约束 ──
+    result_quality_score = -1.0
     if skip_llm:
         llm_scores = {
             "key_factor_score": -1.0,
@@ -96,7 +117,18 @@ async def score_trace(
             reasoning[name] = "已跳过 LLM 评分"
     else:
         llm_metrics = get_llm_metrics()
-        # 并发执行 4 个 LLM 评测
+
+        # 结果质量 metric (条件触发)
+        try:
+            from metrics.result_quality_metric import ResultQualityMetric
+            rq_metric = ResultQualityMetric()
+            rq_result = await rq_metric.measure(parsed_trace, case_context, use_thinking=use_thinking)
+            result_quality_score = rq_result.score
+            reasoning[rq_result.name] = rq_result.reason
+        except Exception as e:
+            reasoning["结果质量"] = f"评分出错: {e}"
+
+        # 4 个 LLM 评测并发执行
         llm_results = await asyncio.gather(
             *[m.measure(parsed_trace, case_context, use_thinking=use_thinking) for m in llm_metrics],
             return_exceptions=True,
@@ -115,14 +147,18 @@ async def score_trace(
 
         llm_scores = llm_score_map
 
+    exec_score = executability_result.score
     return ScoreResult(
         trace_id=parsed_trace["trace_id"],
         format_score=format_result.score,
-        playability_score=playability_result.score,
+        playability_score=exec_score,  # 兼容旧数据
+        executability_score=exec_score,
+        golden_score=golden_score,
         key_factor_score=llm_scores["key_factor_score"],
         preference_score=llm_scores["preference_score"],
         scene_score=llm_scores["scene_score"],
         action_logic_score=llm_scores["action_logic_score"],
+        result_quality_score=result_quality_score,
         latency_ms=parsed_trace.get("latency_ms", 0),
         hard_pass=hard_pass,
         reasoning=reasoning,
