@@ -24,16 +24,17 @@ const EDITABLE_FIELDS = [
   { key: '关键因素', type: 'text' },
   { key: '期望风格方向', type: 'text' },
   { key: '应避免的内容', type: 'text' },
-  { key: 'required_actions', type: 'textarea', placeholder: '[{"tool":"switch_recommend_page","args":{"page_index":1}}]' },
-  { key: 'acceptable_variants', type: 'textarea', placeholder: '[{"tool":"switch_recommend_qq_cards","args":{"card_names":["欧美榜"]}}]' },
+  { key: '最佳操作', type: 'textarea', placeholder: '例: ① 切到QQ音乐 ② 选欧美榜、新歌榜卡片' },
+  { key: '也算对的操作', type: 'textarea', placeholder: '例: 选热门歌手、猜你喜欢卡片（留空或填"无"表示没有替代方案）' },
   { key: '审核状态', type: 'select', options: ['待审核', '已审核', '有建议'] },
   { key: '备注', type: 'text' },
 ]
 
 function hasGoldenAnswer(c: CaseRecord): boolean {
-  const r = getField(c, 'required_actions')
-  const v = getField(c, 'acceptable_variants')
-  return (r.length > 2 || v.length > 2) // 排除空 "[]"
+  const r = getField(c, '最佳操作')
+  const v = getField(c, '也算对的操作')
+  const empty = ['', '无', '-', '—']
+  return (!empty.includes(r.trim()) || !empty.includes(v.trim()))
 }
 
 function getField(c: CaseRecord, field: string): string {
@@ -275,8 +276,8 @@ export default function CaseManagement() {
                                       placeholder={f.placeholder || ''}
                                       rows={2}
                                       className="w-full border rounded px-2 py-1.5 text-xs font-mono bg-white" />
-                                    {!editFields[f.key] && (
-                                      <p className="text-[10px] text-orange-500 mt-0.5">待补充，否则 Golden Answer 维度将显示 N/A</p>
+                                    {!editFields[f.key] && f.key === '最佳操作' && (
+                                      <p className="text-[10px] text-orange-500 mt-0.5">用大白话描述，如"切到QQ音乐, 选欧美榜卡片"</p>
                                     )}
                                   </div>
                                 ) : (

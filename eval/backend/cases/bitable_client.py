@@ -38,8 +38,8 @@ FIELDS = [
     ("主要考察维度",    4, ["格式正确性", "可执行性", "Golden Answer",
                           "关键因素捕获", "用户偏好匹配", "场景契合度",
                           "操作逻辑性", "结果质量"]),
-    ("required_actions",     1),   # Golden Answer: 必须执行的操作 (JSON)
-    ("acceptable_variants",  1),   # Golden Answer: 可接受的替代操作 (JSON)
+    ("最佳操作",       1),   # Golden Answer: 必须执行的操作（自然语言）
+    ("也算对的操作",    1),   # Golden Answer: 可接受的替代操作（自然语言）
     ("备注",          1),
     ("审核状态",       3, ["待审核", "已审核", "有建议"]),
     ("问题标注",       1),
@@ -162,8 +162,8 @@ class BitableCaseManager:
                     "should_avoid": c.get("应避免的内容", ""),
                     "focus_dimensions": c.get("主要考察维度", []),
                 },
-                "required_actions": c.get("required_actions", ""),
-                "acceptable_variants": c.get("acceptable_variants", ""),
+                "最佳操作": c.get("最佳操作", ""),
+                "也算对的操作": c.get("也算对的操作", ""),
                 "note": c.get("备注", ""),
             })
         return results
@@ -184,6 +184,6 @@ class BitableCaseManager:
             "日期类型": scene.get("date_type", ""),
             "关键因素": hints.get("critical_factor", ""),
             "期望风格": hints.get("expected_style", ""),
-            "required_actions": eval_case.get("required_actions", ""),
-            "acceptable_variants": eval_case.get("acceptable_variants", ""),
+            "required_actions": eval_case.get("最佳操作", ""),
+            "acceptable_variants": eval_case.get("也算对的操作", ""),
         }

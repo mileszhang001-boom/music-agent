@@ -11,6 +11,7 @@
 import json
 
 from metrics.base import BaseMetric, MetricResult
+from cases.action_parser import parse_natural_language
 
 
 class GoldenAnswerMetric(BaseMetric):
@@ -21,11 +22,12 @@ class GoldenAnswerMetric(BaseMetric):
         if not case_context:
             return MetricResult(name=self.name, score=-1, reason="无 Case 上下文", is_successful=False)
 
-        raw_required = case_context.get("required_actions", "[]")
-        raw_variants = case_context.get("acceptable_variants", "[]")
+        raw_required = case_context.get("required_actions", "")
+        raw_variants = case_context.get("acceptable_variants", "")
 
-        required = json.loads(raw_required) if isinstance(raw_required, str) else (raw_required or [])
-        variants = json.loads(raw_variants) if isinstance(raw_variants, str) else (raw_variants or [])
+        # 支持自然语言和 JSON 两种格式
+        required = _parse_actions(raw_required)
+        variants = _parse_actions(raw_variants)
 
         if not required and not variants:
             return MetricResult(name=self.name, score=-1, reason="未标注 Golden Answer", is_successful=False)
@@ -110,3 +112,14 @@ def _match_action(expected: dict, actual_calls: list[dict]) -> bool:
                 return True
 
     return False
+
+
+def _parse_actions(raw: str) -> list[dict]:
+    """解析操作描述（支持自然语言和 JSON）"""
+    if not raw or not raw.strip():
+        return []
+    raw = raw.strip()
+    # 如果是 "无" 或类似表示没有的文本
+    if raw in ("无", "没有", "不需要", "-", "—"):
+        return []
+    return parse_natural_language(raw)
