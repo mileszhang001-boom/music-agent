@@ -49,9 +49,18 @@ export default function TraceDetail() {
   const toolCalls = Array.isArray(data.tool_calls) ? data.tool_calls : []
   const usage = data.usage || {}
   const uiState = data.ui_state || {}
-  const resultState = data.result_state || {}
   const resultItems = data.result_items
   const actions = Array.isArray(data.actions) ? data.actions : []
+
+  // 归一化 result_state：兼容旧数据字段名（ximalaya_cards / qq_card_names）
+  const _rs = data.result_state || {}
+  const resultState = {
+    ..._rs,
+    page: typeof _rs.page === 'string' ? parseInt(_rs.page, 10) : (_rs.page ?? 0),
+    page_name: _rs.page_name || PAGE_NAMES[_rs.page] || '',
+    qq_cards: _rs.qq_cards || (Array.isArray(_rs.qq_card_names) ? _rs.qq_card_names : (_rs.qq_card_names || '').split(',').map((s: string) => s.trim()).filter(Boolean)),
+    xm_cards: _rs.xm_cards || (Array.isArray(_rs.ximalaya_cards) ? _rs.ximalaya_cards : (_rs.ximalaya_cards || '').split(',').map((s: string) => s.trim()).filter(Boolean)),
+  }
 
   return (
     <div className="max-w-4xl">
