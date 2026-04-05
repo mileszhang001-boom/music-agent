@@ -199,19 +199,16 @@ export default function CaseManagement() {
         <div className="bg-white rounded-lg border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b text-left text-gray-500 text-xs">
-                <th className="px-3 py-2.5 w-10">
+              <tr className="bg-gray-50 border-b text-left text-gray-500 text-xs whitespace-nowrap">
+                <th className="px-2 py-2.5 w-8">
                   <input type="checkbox" checked={selected.size > 0 && selected.size === reviewedCount}
                     onChange={toggleAll} className="rounded" title="全选已审核" />
                 </th>
-                <th className="px-3 py-2.5 font-medium w-20">Case ID</th>
-                <th className="px-3 py-2.5 font-medium w-16">触发</th>
-                <th className="px-3 py-2.5 font-medium">Query / 场景</th>
-                <th className="px-3 py-2.5 font-medium">偏好</th>
-                <th className="px-3 py-2.5 font-medium w-20">乘客</th>
-                <th className="px-3 py-2.5 font-medium w-24">关键因素</th>
-                <th className="px-3 py-2.5 font-medium w-20">状态</th>
-                <th className="px-3 py-2.5 font-medium w-16">GA</th>
+                <th className="px-2 py-2.5 font-medium">ID</th>
+                <th className="px-2 py-2.5 font-medium">触发</th>
+                <th className="px-2 py-2.5 font-medium">Query / 场景</th>
+                <th className="px-2 py-2.5 font-medium">偏好</th>
+                <th className="px-2 py-2.5 font-medium">状态</th>
               </tr>
             </thead>
             <tbody>
@@ -227,42 +224,39 @@ export default function CaseManagement() {
                     <tr key={rid}
                       className={`border-b border-gray-50 cursor-pointer ${isEditing ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
                       onClick={() => startEdit(c)}>
-                      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                         {isReviewed && (
                           <input type="checkbox" checked={selected.has(rid)}
                             onChange={() => toggleCase(rid)} className="rounded" />
                         )}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-xs">{caseId}</td>
-                      <td className="px-3 py-2.5">
-                        <span className="px-1.5 py-0.5 rounded text-xs bg-gray-100">
+                      <td className="px-2 py-2 font-mono text-xs whitespace-nowrap">{caseId}</td>
+                      <td className="px-2 py-2">
+                        <span className="px-1.5 py-0.5 rounded text-xs bg-gray-100 whitespace-nowrap">
                           {getField(c, '触发方式') || '-'}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5 max-w-[200px] truncate">
+                      <td className="px-2 py-2 max-w-[260px] truncate" title={getField(c, '用户 Query') || getField(c, '活动场景')}>
                         {getField(c, '用户 Query') || getField(c, '活动场景') || '-'}
                       </td>
-                      <td className="px-3 py-2.5 text-gray-600 max-w-[150px] truncate">
+                      <td className="px-2 py-2 text-gray-600 max-w-[160px] truncate" title={[getField(c, '偏好风格'), getField(c, '偏好语言')].filter(Boolean).join(' / ')}>
                         {[getField(c, '偏好风格'), getField(c, '偏好语言')].filter(Boolean).join(' / ') || '-'}
                       </td>
-                      <td className="px-3 py-2.5 text-gray-500">{getField(c, '乘客') || '-'}</td>
-                      <td className="px-3 py-2.5 text-gray-500 truncate">{getField(c, '关键因素') || '-'}</td>
-                      <td className="px-3 py-2.5">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${STATUS_COLORS[status] || 'bg-gray-100'}`}>
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${STATUS_COLORS[status] || 'bg-gray-100'}`}>
                           {status || '-'}
                         </span>
-                      </td>
-                      <td className="px-3 py-2.5">
+                        {' '}
                         {hasGoldenAnswer(c)
-                          ? <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-700">已标注</span>
-                          : <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-600">待补充</span>
+                          ? <span className="px-1 py-0.5 rounded text-[10px] bg-green-100 text-green-700">GA</span>
+                          : <span className="px-1 py-0.5 rounded text-[10px] bg-orange-100 text-orange-600">GA</span>
                         }
                       </td>
                     </tr>
 
                     {isEditing && (
                       <tr key={`${rid}-edit`}>
-                        <td colSpan={9} className="px-4 py-4 bg-blue-50/50 border-b">
+                        <td colSpan={6} className="px-4 py-4 bg-blue-50/50 border-b">
                           <div className="grid grid-cols-3 gap-3">
                             {EDITABLE_FIELDS.map((f) => (
                               <div key={f.key}>

@@ -64,16 +64,14 @@ export default function TraceList() {
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b text-left text-gray-500 text-xs">
-                  <th className="px-3 py-2.5 font-medium w-20">Trace</th>
-                  <th className="px-3 py-2.5 font-medium max-w-[180px]">用户输入</th>
-                  <th className="px-3 py-2.5 font-medium">Tool Calls</th>
-                  <th className="px-3 py-2.5 font-medium text-center w-14">硬约束</th>
-                  <th className="px-3 py-2.5 font-medium text-center w-14">软指标</th>
-                  <th className="px-3 py-2.5 font-medium text-center w-20">模型</th>
-                  <th className="px-3 py-2.5 font-medium text-right w-14">延迟</th>
-                  <th className="px-3 py-2.5 font-medium text-right w-14">Tokens</th>
-                  <th className="px-3 py-2.5 font-medium w-20">时间</th>
+                <tr className="bg-gray-50 border-b text-left text-gray-500 text-xs whitespace-nowrap">
+                  <th className="px-2 py-2.5 font-medium">ID</th>
+                  <th className="px-2 py-2.5 font-medium">用户输入</th>
+                  <th className="px-2 py-2.5 font-medium">Tool Calls</th>
+                  <th className="px-2 py-2.5 font-medium text-center">硬</th>
+                  <th className="px-2 py-2.5 font-medium text-center">软</th>
+                  <th className="px-2 py-2.5 font-medium text-right">模型/延迟</th>
+                  <th className="px-2 py-2.5 font-medium">时间</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,59 +84,47 @@ export default function TraceList() {
                     .replace(/^用户想/, '想')
                   return (
                     <tr key={t.trace_id} className="border-b border-gray-50 hover:bg-blue-50/30">
-                      <td className="px-3 py-2.5">
+                      <td className="px-2 py-2">
                         <Link to={`/traces/${t.trace_id}`}
                           className="text-blue-600 hover:underline font-mono text-xs">
                           {t.trace_id.slice(0, 8)}
                         </Link>
                       </td>
-                      <td className="px-3 py-2.5 max-w-[180px] truncate text-gray-700" title={t.user_text}>
-                        {userText.slice(0, 40)}
+                      <td className="px-2 py-2 max-w-[220px] truncate text-gray-700" title={t.user_text}>
+                        {userText.slice(0, 35)}
                       </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex gap-1 flex-wrap">
+                      <td className="px-2 py-2">
+                        <div className="flex gap-1 flex-nowrap">
                           {toolCalls.map((tc, i) => <ToolBadge key={i} name={tc.function} />)}
                         </div>
                       </td>
-                      {/* 评分列 */}
-                      <td className="px-3 py-2.5 text-center">
+                      <td className="px-2 py-2 text-center">
                         {t.scored ? (
-                          <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                          <span className={`text-[10px] px-1 py-0.5 rounded font-medium ${
                             t.hard_pass ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                           }`}>
                             {t.hard_pass ? 'Pass' : 'Fail'}
                           </span>
                         ) : (
-                          <span className="text-[10px] text-gray-300">评分中</span>
+                          <span className="text-[10px] text-gray-300">...</span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 text-center">
+                      <td className="px-2 py-2 text-center">
                         {t.scored && t.soft_avg != null ? (
                           <span className={`text-xs font-medium ${
                             t.soft_avg >= 7 ? 'text-green-600' : t.soft_avg >= 5 ? 'text-yellow-600' : 'text-red-600'
                           }`}>
                             {t.soft_avg}
                           </span>
-                        ) : t.scored ? (
-                          <span className="text-gray-400 text-xs">-</span>
                         ) : (
-                          <span className="text-[10px] text-gray-300">...</span>
+                          <span className="text-[10px] text-gray-300">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 text-center">
-                        {t.model ? (
-                          <span className="text-[11px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                            {t.model.replace('qwen-', 'Q-')}
-                          </span>
-                        ) : <span className="text-gray-300">-</span>}
+                      <td className="px-2 py-2 text-right whitespace-nowrap">
+                        <span className="text-[10px] text-gray-500">{t.model ? t.model.replace('qwen-', 'Q-') : ''}</span>
+                        <span className="text-[10px] text-gray-400 ml-1">{t.latency_ms >= 1000 ? `${(t.latency_ms / 1000).toFixed(1)}s` : `${t.latency_ms}ms`}</span>
                       </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-xs text-gray-500">
-                        {t.latency_ms >= 1000 ? `${(t.latency_ms / 1000).toFixed(1)}s` : `${t.latency_ms}ms`}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-xs text-gray-500">
-                        {t.total_tokens ? t.total_tokens.toLocaleString() : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-gray-400 text-xs">
+                      <td className="px-2 py-2 text-gray-400 text-xs whitespace-nowrap">
                         {t.created_at?.replace('T', ' ').slice(5, 16)}
                       </td>
                     </tr>
