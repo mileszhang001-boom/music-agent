@@ -71,7 +71,7 @@ export default function TraceDetail() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Trace 详情</h2>
+          <h2 className="text-xl font-bold text-gray-800">日志详情</h2>
           <span className="font-mono text-xs text-gray-400">{data.trace_id}</span>
         </div>
         <div className="flex gap-2">

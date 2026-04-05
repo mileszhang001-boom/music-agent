@@ -80,7 +80,10 @@ export default function Playground() {
 
   return (
     <div className="max-w-5xl">
-      <h2 className="text-xl font-bold text-gray-800 mb-6">Playground</h2>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-gray-800">模拟</h2>
+        <p className="text-xs text-gray-400 border-l-2 border-gray-200 pl-2 mt-1">构造任意场景即时测试，秒级验证 Prompt 调优效果</p>
+      </div>
 
       <div className="grid grid-cols-3 gap-6">
         {/* Left: Input panel */}
