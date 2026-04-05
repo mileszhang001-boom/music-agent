@@ -43,6 +43,7 @@ FIELDS = [
     ("备注",          1),
     ("审核状态",       3, ["待审核", "已审核", "有建议"]),
     ("问题标注",       1),
+    ("校准标记",       3, ["Anchor-高分", "Anchor-低分", "Anchor-中等"]),
 ]
 
 
@@ -178,12 +179,16 @@ class BitableCaseManager:
             "偏好歌手": profile.get("artist", ""),
             "偏好语言": profile.get("language", ""),
             "排斥风格": profile.get("dislike", ""),
+            "画像标签": profile.get("tags", ""),
             "乘客": scene.get("passenger", ""),
             "活动场景": scene.get("activity", ""),
             "时间段": scene.get("time", ""),
             "日期类型": scene.get("date_type", ""),
+            "天气": scene.get("weather", ""),
+            "即时约束": hints.get("constraint", ""),
             "关键因素": hints.get("critical_factor", ""),
             "期望风格": hints.get("expected_style", ""),
+            "应避免的内容": hints.get("should_avoid", ""),
             "required_actions": eval_case.get("最佳操作", ""),
             "acceptable_variants": eval_case.get("也算对的操作", ""),
         }

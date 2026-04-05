@@ -182,26 +182,23 @@ def _build_eval_input(parsed_trace: dict, case_context: dict | None) -> str:
 
     if case_context:
         ctx_parts = []
-        if case_context.get("偏好风格"):
-            ctx_parts.append(f"偏好风格: {case_context['偏好风格']}")
-        if case_context.get("偏好语言"):
-            ctx_parts.append(f"偏好语言: {case_context['偏好语言']}")
-        if case_context.get("排斥风格"):
-            ctx_parts.append(f"排斥风格: {case_context['排斥风格']}")
-        if case_context.get("乘客"):
-            ctx_parts.append(f"乘客: {case_context['乘客']}")
-        if case_context.get("活动场景"):
-            ctx_parts.append(f"活动场景: {case_context['活动场景']}")
-        if case_context.get("时间段"):
-            ctx_parts.append(f"时间段: {case_context['时间段']}")
-        if case_context.get("日期类型"):
-            ctx_parts.append(f"日期类型: {case_context['日期类型']}")
+        # 用户画像
+        for k in ["偏好风格", "偏好歌手", "偏好语言", "排斥风格", "画像标签"]:
+            if case_context.get(k):
+                ctx_parts.append(f"{k}: {case_context[k]}")
+        # 场景
+        for k in ["乘客", "活动场景", "时间段", "日期类型", "天气"]:
+            if case_context.get(k):
+                ctx_parts.append(f"{k}: {case_context[k]}")
+        # 约束与期望
+        if case_context.get("即时约束"):
+            ctx_parts.append(f"⚠ 即时约束: {case_context['即时约束']}")
         if case_context.get("关键因素"):
             ctx_parts.append(f"⚠ 关键因素: {case_context['关键因素']}")
-        else:
-            ctx_parts.append("⚠ 关键因素: 无")
         if case_context.get("期望风格"):
             ctx_parts.append(f"期望风格: {case_context['期望风格']}")
+        if case_context.get("应避免的内容"):
+            ctx_parts.append(f"🚫 应避免: {case_context['应避免的内容']}")
         if ctx_parts:
             parts.append("\n用户画像与场景:\n" + "\n".join(ctx_parts))
 
