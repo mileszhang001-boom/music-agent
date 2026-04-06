@@ -93,20 +93,25 @@ async def run_eval_on_existing_traces(
         for i, trace_row in enumerate(traces):
             trace_id = trace_row["trace_id"]
             try:
-                # 从 DB row 构造 parsed_trace 供 scorer 使用
                 import json
-                parsed = {
-                    "trace_id": trace_id,
-                    "timestamp": trace_row.get("timestamp", 0),
-                    "mode": trace_row.get("mode", ""),
-                    "user_text": trace_row.get("user_text", ""),
-                    "tool_calls": json.loads(trace_row["tool_calls"]) if trace_row.get("tool_calls") else [],
-                    "latency_ms": trace_row.get("latency_ms", 0),
-                    "error": None,
-                    "actions": [],
-                    "ui_state": {"page": 0, "page_name": "", "qq_cards": [], "xm_cards": []},
-                    "prompt_fingerprint": trace_row.get("prompt_fingerprint", ""),
-                }
+                # 优先从 parsed_json 读取完整数据（含 result_items、actions、ui_state 等）
+                parsed_json = trace_row.get("parsed_json", "")
+                if parsed_json:
+                    parsed = json.loads(parsed_json) if isinstance(parsed_json, str) else parsed_json
+                else:
+                    # fallback: 手工构造最小 parsed_trace
+                    parsed = {
+                        "trace_id": trace_id,
+                        "timestamp": trace_row.get("timestamp", 0),
+                        "mode": trace_row.get("mode", ""),
+                        "user_text": trace_row.get("user_text", ""),
+                        "tool_calls": json.loads(trace_row["tool_calls"]) if trace_row.get("tool_calls") else [],
+                        "latency_ms": trace_row.get("latency_ms", 0),
+                        "error": None,
+                        "actions": [],
+                        "ui_state": {"page": 0, "page_name": "", "qq_cards": [], "xm_cards": []},
+                        "prompt_fingerprint": trace_row.get("prompt_fingerprint", ""),
+                    }
 
                 case_ctx = case_contexts.get(trace_id)
                 result = await score_trace(parsed, case_context=case_ctx, skip_llm=skip_llm, use_thinking=use_thinking)
